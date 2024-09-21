@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
-
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -29,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, Integer userId) {
         User user = this.userRepository.findById(userId).orElseThrow((
-                () -> new ResourceNotFoundException(userDto.getName(), userDto.getId())
+                () -> new ResourceNotFoundException(userDto.getName(), userId)
         ));
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());

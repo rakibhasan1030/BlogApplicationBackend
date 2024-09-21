@@ -1,5 +1,6 @@
 package org.rakibhasan.blog.controllers;
 
+import jakarta.validation.Valid;
 import org.rakibhasan.blog.payloads.ApiResponse;
 import org.rakibhasan.blog.payloads.UserDto;
 import org.rakibhasan.blog.services.UserService;
@@ -21,14 +22,14 @@ public class UserController {
 
     // POST - CREATE USER
     @PostMapping("/")
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
         UserDto newUser = userService.createUser(userDto);
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
     }
 
-    // PUT - UPDATE USER
+    // POST - UPDATE USER
     @PostMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Integer userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserDto userDto, @PathVariable Integer userId) {
         return ResponseEntity.ok(userService.updateUser(userDto, userId));
     }
 

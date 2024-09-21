@@ -5,7 +5,7 @@ public class ResourceNotFoundException extends RuntimeException {
     long fieldValue;
 
     public ResourceNotFoundException(long fieldValue) {
-        super(String.format( "User not found with ID '%l'", fieldValue ));
+        super(String.format( "User not found with ID '%s'", fieldValue ));
         this.fieldValue = fieldValue;
     }
 
@@ -15,7 +15,7 @@ public class ResourceNotFoundException extends RuntimeException {
     }
 
     public ResourceNotFoundException(String resourceName, long fieldValue) {
-        super(String.format( "User '%s' not found with ID '%l'", resourceName, fieldValue ));
+        super(String.format( "User '%s' not found with ID '%s'", resourceName, fieldValue ));
         this.resourceName = resourceName;
         this.fieldValue = fieldValue;
     }
