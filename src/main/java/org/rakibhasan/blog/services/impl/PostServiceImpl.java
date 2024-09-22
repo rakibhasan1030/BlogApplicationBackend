@@ -6,14 +6,20 @@ import org.rakibhasan.blog.entities.Post;
 import org.rakibhasan.blog.entities.User;
 import org.rakibhasan.blog.exceptions.ResourceNotFoundException;
 import org.rakibhasan.blog.payloads.PostDto;
+import org.rakibhasan.blog.payloads.PostResponse;
 import org.rakibhasan.blog.repositories.CategoryRepository;
 import org.rakibhasan.blog.repositories.PostRepository;
 import org.rakibhasan.blog.repositories.UserRepository;
 import org.rakibhasan.blog.services.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -60,32 +66,65 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto updatePost(PostDto post, Integer postId) {
-        return null;
+        Post oldPost = this.postRepository.findById(postId).orElseThrow((
+                () -> new ResourceNotFoundException("Post", postId)
+        ));
+        oldPost.setTitle(post.getTitle());
+        oldPost.setContent(post.getContent());
+        oldPost.setImage(post.getImage());
+        Post updatedPost = this.postRepository.save(oldPost);
+        return this.modelMapper.map(updatedPost, PostDto.class);
     }
 
     @Override
     public void deletePost(Integer postId) {
-
+        Post post = this.postRepository.findById(postId).orElseThrow((
+                () -> new ResourceNotFoundException("Post", postId)
+        ));
+        this.postRepository.delete(post);
     }
 
     @Override
     public PostDto getPostById(Integer postId) {
-        return null;
+        Post post = this.postRepository.findById(postId).orElseThrow((
+                () -> new ResourceNotFoundException("Post", postId)
+        ));
+        return this.modelMapper.map(post, PostDto.class);
     }
 
     @Override
-    public List<PostDto> getAllPosts() {
-        return List.of();
+    public PostResponse getAllPosts(Integer pageNumber, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Post> pages = this.postRepository.findAll(pageable);
+        List<PostDto> allPosts = pages.getContent().stream().map(post -> this.modelMapper.map(post, PostDto.class)).toList();
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(allPosts);
+        postResponse.setPageNumber(pages.getNumber());
+        postResponse.setPageSize(pages.getSize());
+        postResponse.setTotalElements(pages.getTotalElements());
+        postResponse.setTotalPages(pages.getTotalPages());
+        postResponse.setLastPage(pages.isLast());
+
+        return postResponse;
     }
 
     @Override
     public List<PostDto> getPostsByCategory(Integer categoryId) {
-        return List.of();
+        Category category = this.categoryRepository.findById(categoryId).orElseThrow((
+                () -> new ResourceNotFoundException("Category", categoryId)
+        ));
+        List<Post> posts = this.postRepository.findByCategory(category);
+        return posts.stream().map(post -> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
     }
 
     @Override
     public List<PostDto> getPostsByUser(Integer userId) {
-        return List.of();
+        User user = this.userRepository.findById(userId).orElseThrow((
+                () -> new ResourceNotFoundException(userId)
+        ));
+        List<Post> posts = this.postRepository.findByUser(user);
+        return posts.stream().map(post -> this.modelMapper.map(post, PostDto.class)).collect(Collectors.toList());
     }
 
     @Override

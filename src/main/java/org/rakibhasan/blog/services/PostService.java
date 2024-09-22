@@ -1,6 +1,7 @@
 package org.rakibhasan.blog.services;
 
 import org.rakibhasan.blog.payloads.PostDto;
+import org.rakibhasan.blog.payloads.PostResponse;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface PostService {
     PostDto getPostById(Integer postId);
 
     // GET ALL POSTS
-    List<PostDto> getAllPosts();
+    PostResponse getAllPosts(Integer pageNumber, Integer pageSize);
 
     // GET POSTS BY CATEGORY
     List<PostDto> getPostsByCategory(Integer categoryId);
