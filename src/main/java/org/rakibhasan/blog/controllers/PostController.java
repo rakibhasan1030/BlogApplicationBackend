@@ -1,24 +1,37 @@
 package org.rakibhasan.blog.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.rakibhasan.blog.payloads.ApiResponse;
-import org.rakibhasan.blog.payloads.PostDto;
-import org.rakibhasan.blog.payloads.PostResponse;
+import org.rakibhasan.blog.payloads.*;
+import org.rakibhasan.blog.services.FileService;
 import org.rakibhasan.blog.services.PostService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+
+import static org.rakibhasan.blog.config.AppConstants.*;
 
 @RestController
 @RequestMapping("/api/")
 public class PostController {
 
-    private PostService postService;
+    @Value("${project.image}")
+    private String path;
 
-    public PostController(PostService postService) {
+    private PostService postService;
+    private final FileService fileService;
+
+    public PostController(PostService postService, FileService fileService) {
         this.postService = postService;
+        this.fileService = fileService;
     }
 
     // POST - CREATE A POST
@@ -48,7 +61,7 @@ public class PostController {
 
     // GET - GET ALL POSTS BY POST ID
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<PostDto> getAllPostsById(
+    public ResponseEntity<PostDto> getPostById(
             @PathVariable Integer postId
     ) {
         PostDto postsById = this.postService.getPostById(postId);
@@ -76,11 +89,44 @@ public class PostController {
     // GET - GET ALL THE POSTS
     @GetMapping("/posts")
     public ResponseEntity<PostResponse> getAllPosts(
-            @RequestParam(value = "pageNumber", defaultValue = "0", required = false) Integer pageNumber,
-            @RequestParam(value = "pageSize", defaultValue = "5", required = false) Integer pageSize
+            @RequestParam(value = "pageNumber", defaultValue = PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", defaultValue = PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(value = "sortBy", defaultValue = SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDirection", defaultValue = SORT_DIR, required = false) String sortDirection
     ) {
-        PostResponse allPosts = this.postService.getAllPosts(pageNumber, pageSize);
+        PostResponse allPosts = this.postService.getAllPosts(pageNumber, pageSize, sortBy, sortDirection);
         return new ResponseEntity<>(allPosts, HttpStatus.OK);
+    }
+
+    // GET - SEARCH POSTS BY TITLE
+    @GetMapping("/posts/search/{keyword}")
+    public ResponseEntity<List<PostDto>> getPostsByTitle(
+            @PathVariable String keyword
+    ) {
+        List<PostDto> posts = this.postService.searchPosts(keyword);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+    @PostMapping("/posts/image/upload/{postId}")
+    public ResponseEntity<PostImageResponse> uploadPostImage(
+            @RequestParam("image") MultipartFile image,
+            @PathVariable("postId") Integer postId
+    ) throws IOException {
+        PostDto postDto = this.postService.getPostById(postId);
+        String fileName = this.fileService.uploadImage(path, image);
+        postDto.setImage(fileName);
+        this.postService.updatePost(postDto, postId);
+        return new ResponseEntity<>(new PostImageResponse(fileName, "Image Successfully Uploaded"), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/posts/image/{imageName}", produces = MediaType.IMAGE_PNG_VALUE)
+    public void downloadPostImage(
+            @PathVariable("imageName") String imageName,
+            HttpServletResponse response
+    ) throws IOException {
+        InputStream resource = this.fileService.getResource(path, imageName);
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        StreamUtils.copy(resource, response.getOutputStream());
     }
 
 }
