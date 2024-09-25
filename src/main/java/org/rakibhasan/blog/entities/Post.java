@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name = "posts")
 @NoArgsConstructor
@@ -33,6 +35,9 @@ public class Post {
 
     @ManyToOne
     private User user;
+
+    @OneToMany(mappedBy = "post")
+    private Set<Comment> comments  = new HashSet<>();
 
 }
 
