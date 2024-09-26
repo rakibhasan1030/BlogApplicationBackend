@@ -15,18 +15,22 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-
     private UserDetailsService userDetailsService;
     private JWTTokenHelper jwtTokenHelper;
+
+    private static final List<String> AUTH_WHITELIST = SecurityConstants.AUTH_WHITELIST;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public JwtAuthenticationFilter(
             UserDetailsService userDetailsService,
@@ -86,11 +90,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        logger.debug("Checking if should not filter: {}", path);
-        return "/api/v1/auth/login".equals(path);
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return AUTH_WHITELIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
+
 }
 
 

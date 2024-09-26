@@ -3,6 +3,7 @@ package org.rakibhasan.blog.exceptions;
 import org.rakibhasan.blog.payloads.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> resourceNotFoundExceptionHandler(ResourceNotFoundException ex) {
         String message = ex.getMessage();
         ApiResponse apiResponse = new ApiResponse(false, message);
-        return new ResponseEntity<ApiResponse>(apiResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -32,4 +33,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ApiResponse> invalidPasswordExceptionHandler(InvalidPasswordException ex) {
+        String message = ex.getMessage();
+        ApiResponse apiResponse = new ApiResponse(false, message);
+        return new ResponseEntity<>(apiResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse> badCredentialsExceptionHandler(BadCredentialsException ex) {
+        String message = ex.getMessage();
+        ApiResponse apiResponse = new ApiResponse(false, message);
+        return new ResponseEntity<>(apiResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse> generalExceptionHandler(Exception ex) {
+        String message = ex.getMessage();
+        ApiResponse apiResponse = new ApiResponse(false, "An error occurred: " + message);
+        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

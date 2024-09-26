@@ -2,13 +2,8 @@ package org.rakibhasan.blog.controllers;
 
 import org.rakibhasan.blog.payloads.JwtAuthRequest;
 import org.rakibhasan.blog.payloads.JwtAuthResponse;
-import org.rakibhasan.blog.security.JWTTokenHelper;
-import org.springframework.http.HttpStatus;
+import org.rakibhasan.blog.services.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,40 +13,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth/")
 public class AuthController {
 
-    private JWTTokenHelper jwtTokenHelper;
-    private UserDetailsService userDetailsService;
-    private AuthenticationManager authenticationManager;
+    private AuthService authService;
 
-    public AuthController(
-            JWTTokenHelper jwtTokenHelper,
-            UserDetailsService userDetailsService,
-            AuthenticationManager authenticationManager
-    ) {
-        this.jwtTokenHelper = jwtTokenHelper;
-        this.userDetailsService = userDetailsService;
-        this.authenticationManager = authenticationManager;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
-
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> createToken(
-            @RequestBody JwtAuthRequest request
-    ) {
-        this.authenticate(request.getUsername(), request.getPassword());
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(request.getUsername());
-        String generatedToken = this.jwtTokenHelper.generateToken(userDetails);
-        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse();
-        jwtAuthResponse.setToken(generatedToken);
-        return new ResponseEntity<>(jwtAuthResponse, HttpStatus.OK);
+    public ResponseEntity<?> createToken(@RequestBody JwtAuthRequest request) {
+        try {
+            JwtAuthResponse response = authService.authenticate(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Let the GlobalExceptionHandler handle the exception
+            throw e;
+        }
     }
-
-    private void authenticate(String username, String password) {
-        this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-    }
-
-
 }
-
 
 
 

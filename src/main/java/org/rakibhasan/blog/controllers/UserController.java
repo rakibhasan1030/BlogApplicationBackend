@@ -6,6 +6,7 @@ import org.rakibhasan.blog.payloads.UserDto;
 import org.rakibhasan.blog.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class UserController {
     }
 
     //DELETE - DELETE USER
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable Integer userId) {
         userService.deleteUser(userId);

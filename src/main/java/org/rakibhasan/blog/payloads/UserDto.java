@@ -24,7 +24,7 @@ public class UserDto {
     private String email;
 
     @NotEmpty(message = "Password cannot be empty.")
-    @Size(min = 4, max = 30, message = "Password must be between 4 and 30 characters long.")
+    @Size(min = 4, max = 100, message = "Password must be between 4 and 100 characters long.")
     private String password;
 
     @NotEmpty(message = "About section cannot be empty.")
