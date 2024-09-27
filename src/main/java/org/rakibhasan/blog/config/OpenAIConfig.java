@@ -9,10 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+
 
 @EnableWebMvc
 @Configuration
-public class SwaggerConfig implements WebMvcConfigurer {
+public class OpenAIConfig implements WebMvcConfigurer {
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -28,7 +32,10 @@ public class SwaggerConfig implements WebMvcConfigurer {
                         .license(new License()
                                 .name("License of APIs")
                                 .url("API License URL"))
-                        .termsOfService("Terms and Service"));
+                        .termsOfService("Terms and Service"))
+                .addSecurityItem(new SecurityRequirement().addList("BlogApplicationSecurityScheme"))
+                .components(new Components().addSecuritySchemes("BlogApplicationSecurityScheme", new SecurityScheme()
+                        .name("BlogApplicationSecurityScheme").type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")));
     }
 
 
