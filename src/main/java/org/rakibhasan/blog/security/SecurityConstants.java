@@ -4,8 +4,9 @@ import java.util.List;
 
 public final class SecurityConstants {
     public static final List<String> AUTH_WHITELIST = List.of(
-            "/api/auth/**",
+            "/api/v1/auth/**",
             "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
             "/configuration/ui",
             "/swagger-resources/**",
             "/configuration/security",
@@ -13,7 +14,8 @@ public final class SecurityConstants {
             "/swagger-ui.html",
             "/webjars/**",
             "/.well-known/**",
-            "/api-docs",
-            "/resource/**"
+            "/api-docs/**",
+            "/resource/**",
+            "/swagger-ui/index.html"
     );
 }

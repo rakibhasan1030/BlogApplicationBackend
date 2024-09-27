@@ -29,7 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private UserDetailsService userDetailsService;
     private JWTTokenHelper jwtTokenHelper;
 
-    private static final List<String> AUTH_WHITELIST = SecurityConstants.AUTH_WHITELIST;
+    private static final List<String> AuthWhiteList = SecurityConstants.AUTH_WHITELIST;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public JwtAuthenticationFilter(
@@ -92,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return AUTH_WHITELIST.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
+        return AuthWhiteList.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
 
 }

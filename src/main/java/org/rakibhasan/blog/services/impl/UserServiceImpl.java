@@ -1,21 +1,56 @@
 package org.rakibhasan.blog.services.impl;
 
+import org.modelmapper.ModelMapper;
+import org.rakibhasan.blog.entities.Role;
 import org.rakibhasan.blog.entities.User;
 import org.rakibhasan.blog.exceptions.ResourceNotFoundException;
 import org.rakibhasan.blog.payloads.UserDto;
+import org.rakibhasan.blog.repositories.RoleRepository;
 import org.rakibhasan.blog.repositories.UserRepository;
 import org.rakibhasan.blog.services.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.rakibhasan.blog.config.AppConstants.ID_NORMAL_USER;
+
+
 @Service
 public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
-    public UserServiceImpl(UserRepository userRepository) {
+    private ModelMapper modelmapper;
+    private PasswordEncoder passwordEncoder;
+    private RoleRepository roleRepository;
+
+    public UserServiceImpl(
+            UserRepository userRepository,
+            ModelMapper modelmapper,
+            PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository
+    ) {
         this.userRepository = userRepository;
+        this.modelmapper = modelmapper;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+    }
+
+    @Override
+    public UserDto registerUser(UserDto userDto) {
+        User user = modelmapper.map(userDto, User.class);
+
+        // ENCODED THE PASSWORD
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // ROLE
+        Role role = this.roleRepository.findById(ID_NORMAL_USER)
+                .orElseThrow(() -> new ResourceNotFoundException("Role", ID_NORMAL_USER));
+        user.getRoles().add(role);
+        User saveUser = this.userRepository.save(user);
+
+        return this.modelmapper.map(saveUser, UserDto.class);
     }
 
     @Override
